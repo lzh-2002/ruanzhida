@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漏洞检测平台 - 扫描结果</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        .header-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        .header-top .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #9b59b6;
+        }
+        .header-top .logo i {
+            font-size: 20px;
+        }
+        .header-top .user-info {
+            position: relative;
+        }
+        .header-top .user-info .user-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: transparent;
+            border: 2px solid #9b59b6;
+            border-radius: 30px;
+            padding: 8px 18px;
+            color: #9b59b6;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .header-top .user-info .user-btn:hover {
+            background: #9b59b6;
+            color: white;
+        }
+        .header-top .user-info .user-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 160px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        .header-top .user-info:hover .user-dropdown,
+        .header-top .user-info .user-dropdown:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .header-top .user-info .user-dropdown .dropdown-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .header-top .user-info .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .header-top .user-info .user-dropdown a:hover {
+            background-color: #f5f7fa;
+        }
+        .header-top .user-info .user-dropdown a i {
+            margin-right: 10px;
+            width: 16px;
+            text-align: center;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: white;
+            color: #2c3e50;
+            position: fixed;
+            left: 0;
+            top: 60px;
+            padding-top: 20px;
+            border-right: 1px solid #eee;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar li {
+            padding: 10px 20px;
+        }
+        .sidebar li a {
+            color: #555;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .sidebar li a:hover {
+            background-color: #f5f7fa;
+            color: #2c3e50;
+        }
+        .sidebar li a.active {
+            background-color: #9b59b6;
+            color: white;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 80px 20px 20px;
+        }
+        .header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .btn-export {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-export:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+        .vuln-card {
+            border-left: 4px solid;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .vuln-critical {
+            border-color: #e74c3c;
+        }
+        .vuln-high {
+            border-color: #e67e22;
+        }
+        .vuln-medium {
+            border-color: #f39c12;
+        }
+        .severity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .severity-critical {
+            background-color: #e74c3c;
+        }
+        .severity-high {
+            background-color: #e67e22;
+        }
+        .severity-medium {
+            background-color: #f39c12;
+        }
+        .info-box {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .success-icon {
+            color: #27ae60;
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .analysis-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            color: white;
+        }
+        .analysis-card h4 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .analysis-card p {
+            margin: 0 0 15px 0;
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        .analysis-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .analysis-section:last-child {
+            margin-bottom: 0;
+        }
+        .analysis-section h5 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .analysis-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .analysis-section li {
+            font-size: 12px;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        .analysis-section li:last-child {
+            margin-bottom: 0;
+        }
+        .analysis-risk-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-top">
+        <div class="logo">
+            <span>🏭 工业互联网漏洞检测平台</span>
+        </div>
+        <div class="user-info">
+            <div class="user-dropdown">
+                <div class="dropdown-header">{{ username }}</div>
+                <a href="{{ url_for('settings') }}"><i>⚙</i>个人设置</a>
+                <a href="{{ url_for('logout') }}"><i>↵</i>退出登录</a>
+            </div>
+            <button class="user-btn">👤 {{ username }}</button>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}"><i>📊</i>仪表盘</a></li>
+            <li><a href="{{ url_for('scan') }}"><i>➕</i>漏洞扫描</a></li>
+            <li><a href="{{ url_for('index') }}"><i>📋</i>扫描记录</a></li>
+            <li><a href="{{ url_for('recycle_bin') }}"><i>🗑</i>回收站</a></li>
+            {% if session.get('username') == 'admin' %}
+            <li><a href="{{ url_for('users') }}"><i>👥</i>用户管理</a></li>
+            <li><a href="{{ url_for('logs') }}"><i>📝</i>系统日志</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    
+    <div class="content">
+        <div class="header">
+            <h1><i>📝</i>扫描结果</h1>
+            <p>查看扫描任务的详细检测报告</p>
+        </div>
+        
+        <div class="card">
+            <h2>扫描任务详情</h2>
+            <div class="info-box">
+                <strong>目标URL:</strong> <a href="{{ task.target_url }}" target="_blank">{{ task.target_url }}</a><br>
+                <strong>状态:</strong> {{ task.status }}<br>
+                <strong>创建时间:</strong> {{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                <strong>完成时间:</strong> {{ task.completed_at.strftime('%Y-%m-%d %H:%M:%S') if task.completed_at else '-' }}
+            </div>
+            
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">返回扫描记录</a>
+            <a href="{{ url_for('scan') }}" class="btn">开始新扫描</a>
+            <a href="{{ url_for('export_pdf', task_id=task.id) }}" class="btn btn-export">📄 导出PDF报告</a>
+        </div>
+        
+        <div class="card">
+            <h2>漏洞检测结果</h2>
+            
+            {% if vulnerabilities %}
+                {% for vuln in vulnerabilities %}
+                <div class="vuln-card vuln-{{ vuln.severity.lower() }}">
+                    <h3>{{ vuln.type }} <span class="severity severity-{{ vuln.severity.lower() }}">{{ vuln.severity }}</span></h3>
+                    <p><strong>描述:</strong> {{ vuln.description }}</p>
+                    <p><strong>检测时间:</strong> {{ vuln.found_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    {% if vuln.payload %}
+                    <p><strong>有效载荷:</strong> <code>{{ vuln.payload }}</code></p>
+                    {% endif %}
+                    
+                    {% if vuln_analysis_map.get(vuln.id) %}
+                    <div class="analysis-card">
+                        <h4>🤖 AI深度分析 <span class="analysis-risk-tag">{{ vuln_analysis_map[vuln.id].risk_level }}</span></h4>
+                        <p>{{ vuln_analysis_map[vuln.id].analysis }}</p>
+                        
+                        <div class="analysis-section">
+                            <h5>🎯 攻击向量</h5>
+                            <p>{{ vuln_analysis_map[vuln.id].attack_vector }}</p>
+                        </div>
+                        
+                        <div class="analysis-section">
+                            <h5>✅ 修复建议</h5>
+                            <ul>
+                                {% for rec in vuln_analysis_map[vuln.id].recommendations %}
+                                <li>{{ rec }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 40px;">
+                    <span class="success-icon">✓</span>
+                    <h3>未发现漏洞</h3>
+                    <p>目标网站在本次扫描中未发现已知漏洞。</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

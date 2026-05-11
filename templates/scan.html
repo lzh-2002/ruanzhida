@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漏洞检测平台 - 漏洞扫描</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        .header-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        .header-top .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #9b59b6;
+        }
+        .header-top .logo i {
+            font-size: 20px;
+        }
+        .header-top .user-info {
+            position: relative;
+        }
+        .user-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: transparent;
+            border: 2px solid #9b59b6;
+            border-radius: 30px;
+            padding: 8px 18px;
+            color: #9b59b6;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .user-btn:hover {
+            background: #9b59b6;
+            color: white;
+        }
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            min-width: 160px;
+            z-index: 1001;
+        }
+        .user-dropdown.show {
+            display: block;
+        }
+        .user-dropdown .dropdown-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .user-dropdown a {
+            display: block;
+            padding: 10px 15px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .user-dropdown a:hover {
+            background-color: #f5f7fa;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: white;
+            color: #2c3e50;
+            position: fixed;
+            left: 0;
+            top: 60px;
+            padding-top: 20px;
+            border-right: 1px solid #eee;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar li {
+            margin: 0;
+        }
+        .sidebar li {
+            padding: 10px 20px;
+        }
+        .sidebar li a {
+            color: #555;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .sidebar li a:hover {
+            background-color: #f5f7fa;
+            color: #2c3e50;
+        }
+        .sidebar li a.active {
+            background-color: #9b59b6;
+            color: white;
+        }
+        .content {
+            margin-left: 270px;
+            padding: 80px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .content-header {
+            width: 100%;
+        }
+        .content-body {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            align-items: stretch;
+        }
+        .content-main {
+            flex: 2;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-sidebar {
+            flex: 1.0;
+            min-width: 320px;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-sidebar .info-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 800px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .features {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .features h3 {
+            margin-bottom: 15px;
+        }
+        .features ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2327ae60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpolyline points="20 6 9 17 4 12"%3E%3C/polyline%3E%3C/svg%3E');
+            background-repeat: no-repeat;
+            background-position: left center;
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 25px 0 15px;
+        }
+        .scan-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .scan-type {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 15px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+        }
+        .scan-type:hover {
+            border-color: #9b59b6;
+        }
+        .scan-type.selected {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            border-color: #9b59b6;
+            color: white;
+        }
+        .scan-type.selected .scan-type-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .scan-type-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .scan-type-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .scan-type-desc {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .protocol-options {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+        .protocol-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .protocol-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #9b59b6;
+        }
+        .protocol-option label {
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+        .protocol-desc {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+            margin-left: 28px;
+        }
+        .custom-ports {
+            display: none;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .custom-ports.show {
+            display: block;
+        }
+        .custom-ports label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .custom-ports input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .custom-ports input:focus {
+            outline: none;
+            border-color: #9b59b6;
+        }
+        .custom-ports-hint {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 8px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+        }
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+        .info-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-section {
+            margin-bottom: 25px;
+        }
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+        .info-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .info-section li {
+            padding: 8px 0;
+            font-size: 13px;
+            color: #555;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .info-section li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #9b59b6;
+            font-weight: bold;
+        }
+        .warning-box {
+            background: #fff8e1;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+        .warning-box p {
+            font-size: 13px;
+            color: #8b4513;
+            margin: 0;
+            line-height: 1.5;
+        }
+        /* 扫描进度动画模态框 */
+        .scan-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .scan-overlay.show {
+            display: flex;
+        }
+        .scan-progress-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+        }
+        .scan-animation {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px;
+            position: relative;
+        }
+        .scan-circle {
+            width: 100%;
+            height: 100%;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #9b59b6;
+            border-radius: 50%;
+            animation: scanRotate 1s linear infinite;
+        }
+        .scan-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+        }
+        @keyframes scanRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .scan-progress-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .scan-progress-status {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            height: 20px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .progress-percentage {
+            font-size: 24px;
+            font-weight: 600;
+            color: #9b59b6;
+        }
+        .scan-details {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: left;
+        }
+        .scan-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .scan-detail-item i {
+            color: #9b59b6;
+        }
+        .scan-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(155, 89, 182, 0.2);
+            animation: pulse 1.5s ease-out infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-top">
+        <div class="logo">
+            <span>🏭 工业互联网漏洞检测平台</span>
+        </div>
+        <div class="user-info">
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">{{ username }}</div>
+                <a href="{{ url_for('settings') }}"><i>⚙</i>个人设置</a>
+                <a href="{{ url_for('logout') }}"><i>↵</i>退出登录</a>
+            </div>
+            <button class="user-btn" id="userBtn">👤 {{ username }}</button>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}"><i>📊</i>仪表盘</a></li>
+            <li><a href="{{ url_for('scan') }}" class="active"><i>➕</i>漏洞扫描</a></li>
+            <li><a href="{{ url_for('index') }}"><i>📋</i>扫描记录</a></li>
+            <li><a href="{{ url_for('recycle_bin') }}"><i>🗑</i>回收站</a></li>
+            {% if session.get('username') == 'admin' %}
+            <li><a href="{{ url_for('users') }}"><i>👥</i>用户管理</a></li>
+            <li><a href="{{ url_for('logs') }}"><i>📝</i>系统日志</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    
+    <div class="content">
+        <div class="content-header">
+            <div class="header">
+                <h1><i>➕</i>漏洞扫描</h1>
+                <p>输入目标URL开始安全扫描</p>
+            </div>
+        </div>
+        
+        <div class="content-body">
+            <div class="content-main">
+                <div class="card">
+                    <h2>开始新扫描</h2>
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="target_url"><i>📍</i> 目标地址 <span style="color: #e74c3c;">*</span></label>
+                            <input type="text" id="target_url" name="target_url" placeholder="输入 IP 地址或域名，如 192.168.1.1 或 example.com" required>
+                            <p style="font-size: 12px; color: #7f8c8d; margin-top: 8px;">支持单个 IP、IP 段（如 192.168.1.1-10）或域名</p>
+                        </div>
+                        
+                        <div class="section-title">
+                            <i>⚙</i> 扫描类型
+                        </div>
+                        <div class="scan-types">
+                            <label class="scan-type selected">
+                                <input type="radio" name="scan_type" value="quick" checked hidden>
+                                <div class="scan-type-icon">⚡</div>
+                                <div class="scan-type-name">快速扫描</div>
+                                <div class="scan-type-desc">常见端口</div>
+                            </label>
+                            <label class="scan-type">
+                                <input type="radio" name="scan_type" value="custom" hidden>
+                                <div class="scan-type-icon">⚙</div>
+                                <div class="scan-type-name">自定义扫描</div>
+                                <div class="scan-type-desc">指定端口</div>
+                            </label>
+                            <label class="scan-type">
+                                <input type="radio" name="scan_type" value="full" hidden>
+                                <div class="scan-type-icon">🔍</div>
+                                <div class="scan-type-name">全端口扫描</div>
+                                <div class="scan-type-desc">1-65535</div>
+                            </label>
+                        </div>
+                        
+                        <div class="custom-ports" id="customPorts">
+                            <label><i>🔢</i> 指定端口</label>
+                            <input type="text" name="ports" id="ports" placeholder="输入端口号，多个端口用逗号分隔，如：80,443,8080">
+                            <p class="custom-ports-hint">支持格式：单个端口（如 80）、多个端口（如 80,443）、端口范围（如 1-100）</p>
+                        </div>
+                        
+                        <div class="section-title">
+                            <i>🔌</i> 扫描协议
+                        </div>
+                        <div class="protocol-options">
+                            <div class="protocol-option">
+                                <input type="radio" id="protocol_tcp" name="protocol" value="tcp" checked>
+                                <label for="protocol_tcp">TCP 扫描（推荐）</label>
+                            </div>
+                            <div class="protocol-option">
+                                <input type="radio" id="protocol_udp" name="protocol" value="udp">
+                                <label for="protocol_udp">UDP 扫描</label>
+                            </div>
+                        </div>
+                        <p class="protocol-desc">TCP 扫描速度更快，UDP 扫描可发现更多服务</p>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i>▶</i> 开始扫描
+                        </button>
+                    </form>
+                    
+                    <div class="features">
+                        <h3>扫描功能</h3>
+                        <ul>
+                            <li>XSS跨站脚本攻击检测</li>
+                            <li>SQL注入漏洞检测</li>
+                            <li>开放重定向检测</li>
+                            <li>本地文件包含检测</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-sidebar">
+                <div class="info-card">
+                    <h3><i>📋</i> 扫描说明与注意事项</h3>
+                    
+                    <div class="info-section">
+                        <h4><i>📌</i> 扫描说明</h4>
+                        <ul>
+                            <li>快速扫描：扫描常见端口（21, 22, 80, 443等）</li>
+                            <li>自定义扫描：扫描指定端口范围</li>
+                            <li>全端口扫描：扫描1-65535所有端口</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4><i>⚠</i> 安全注意事项</h4>
+                        <ul>
+                            <li>仅扫描授权的目标系统</li>
+                            <li>扫描前请获得目标系统所有者的书面授权</li>
+                            <li>未经授权的扫描可能违反法律法规</li>
+                            <li>建议在非工作时间进行全端口扫描</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4><i>💡</i> 使用提示</h4>
+                        <ul>
+                            <li>首次扫描建议使用快速扫描</li>
+                            <li>TCP扫描速度较快，适合快速检测</li>
+                            <li>UDP扫描可发现更多服务但耗时较长</li>
+                            <li>扫描结果将保存至扫描记录中</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <p><strong>⚠ 重要提醒：</strong><br>本工具仅供安全测试和研究使用。使用者必须遵守相关法律法规，不得用于非法入侵或攻击未授权的系统。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 扫描进度动画模态框 -->
+    <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-progress-container">
+            <div class="scan-animation">
+                <div class="scan-pulse"></div>
+                <div class="scan-circle"></div>
+                <div class="scan-inner">🔍</div>
+            </div>
+            <div class="scan-progress-title">正在扫描漏洞...</div>
+            <div class="scan-progress-status" id="scanStatus">正在初始化扫描引擎</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-percentage" id="progressPercentage">0%</div>
+            <div class="scan-details">
+                <div class="scan-detail-item">
+                    <i>📍</i>
+                    <span id="targetDisplay">目标: -</span>
+                </div>
+                <div class="scan-detail-item">
+                    <i>⚡</i>
+                    <span id="scanTypeDisplay">扫描类型: -</span>
+                </div>
+                <div class="scan-detail-item">
+                    <i>🔌</i>
+                    <span id="protocolDisplay">协议: -</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scanTypes = document.querySelectorAll('.scan-type');
+        const customPorts = document.getElementById('customPorts');
+
+        scanTypes.forEach(type => {
+            type.addEventListener('click', function() {
+                scanTypes.forEach(t => t.classList.remove('selected'));
+                this.classList.add('selected');
+
+                const radioInput = this.querySelector('input[type="radio"]');
+                if (radioInput.value === 'custom') {
+                    customPorts.classList.add('show');
+                } else {
+                    customPorts.classList.remove('show');
+                }
+            });
+        });
+
+        const userBtn = document.getElementById('userBtn');
+        const userDropdown = document.getElementById('userDropdown');
+
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-info')) {
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        // 扫描进度动画逻辑
+        const scanForm = document.querySelector('form');
+        const scanOverlay = document.getElementById('scanOverlay');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const scanStatus = document.getElementById('scanStatus');
+        const targetDisplay = document.getElementById('targetDisplay');
+        const scanTypeDisplay = document.getElementById('scanTypeDisplay');
+        const protocolDisplay = document.getElementById('protocolDisplay');
+
+        const scanStatusTexts = [
+            '正在初始化扫描引擎...',
+            '正在解析目标地址...',
+            '正在检测XSS漏洞...',
+            '正在检测SQL注入漏洞...',
+            '正在检测开放重定向漏洞...',
+            '正在检测本地文件包含漏洞...',
+            '正在分析扫描结果...',
+            '正在生成报告...'
+        ];
+
+        scanForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const targetUrl = document.getElementById('target_url').value;
+            const scanType = document.querySelector('input[name="scan_type"]:checked').value;
+            const protocol = document.querySelector('input[name="protocol"]:checked').value;
+
+            // 显示扫描信息
+            targetDisplay.textContent = '目标: ' + targetUrl;
+            scanTypeDisplay.textContent = '扫描类型: ' + (scanType === 'quick' ? '快速扫描' : scanType === 'custom' ? '自定义扫描' : '全端口扫描');
+            protocolDisplay.textContent = '协议: ' + protocol.toUpperCase();
+
+            // 显示进度动画
+            scanOverlay.classList.add('show');
+
+            let progress = 0;
+            let statusIndex = 0;
+
+            // 进度条动画
+            const progressInterval = setInterval(function() {
+                progress += Math.random() * 3 + 1;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                progressPercentage.textContent = Math.floor(progress) + '%';
+
+                // 更新状态文字
+                if (statusIndex < scanStatusTexts.length) {
+                    scanStatus.textContent = scanStatusTexts[statusIndex];
+                    if (progress > (statusIndex + 1) * 12) {
+                        statusIndex++;
+                    }
+                }
+
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    scanStatus.textContent = '扫描完成，正在跳转...';
+                    setTimeout(function() {
+                        scanForm.submit();
+                    }, 500);
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>
