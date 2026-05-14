@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫描报告 #{{ task.id }} - {{ task.target_ip }}</title>
+    <style>
+        /* 打印友好样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #333;
+            padding: 20mm;
+            background: white;
+        }
+
+        /* 报告头部 */
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #9b59b6;
+        }
+
+        .report-title {
+            font-size: 24pt;
+            color: #9b59b6;
+            margin-bottom: 10px;
+        }
+
+        .report-subtitle {
+            font-size: 14pt;
+            color: #666;
+        }
+
+        .report-meta {
+            margin-top: 15px;
+            font-size: 10pt;
+            color: #888;
+        }
+
+        /* 信息卡片 */
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 14pt;
+            color: #9b59b6;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #f3e5f5;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-item {
+            background: #faf5f9;
+            padding: 12px 15px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .stat-card.primary { background: #9b59b6; }
+        .stat-card.danger { background: #E53935; }
+        .stat-card.warning { background: #FB8C00; }
+        .stat-card.info { background: #00ACC1; }
+
+        .stat-value {
+            font-size: 24pt;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 10pt;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10pt;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border: 1px solid #E0E0E0;
+        }
+
+        th {
+            background: #f3e5f5;
+            font-weight: bold;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background: #FAFAFA;
+        }
+
+        /* 漏洞卡片 */
+        .vuln-list {
+            margin-bottom: 25px;
+        }
+
+        .vuln-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background: #FAFAFA;
+            page-break-inside: avoid;
+        }
+
+        .vuln-item.high {
+            border-left-color: #E53935;
+            background: linear-gradient(90deg, #FFEBEE 0%, #FAFAFA 20%);
+        }
+
+        .vuln-item.mid {
+            border-left-color: #FB8C00;
+            background: linear-gradient(90deg, #FFF3E0 0%, #FAFAFA 20%);
+        }
+
+        .vuln-item.low {
+            border-left-color: #00ACC1;
+            background: linear-gradient(90deg, #E0F7FA 0%, #FAFAFA 20%);
+        }
+
+        .vuln-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .vuln-name {
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .vuln-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+        .vuln-badge.high { background: #FFCDD2; color: #C62828; }
+        .vuln-badge.mid { background: #FFE0B2; color: #E65100; }
+        .vuln-badge.low { background: #B2EBF2; color: #00838F; }
+
+        .vuln-meta {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .vuln-desc {
+            font-size: 10pt;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .vuln-solution {
+            font-size: 10pt;
+            padding: 10px;
+            background: #E8F5E9;
+            border-radius: 4px;
+            color: #2E7D32;
+        }
+
+        /* AI 摘要 */
+        .ai-summary {
+            padding: 20px;
+            background: #f3e5f5;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            white-space: pre-wrap;
+            font-size: 11pt;
+            line-height: 1.8;
+        }
+
+        .ai-summary-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #9b59b6;
+            margin-bottom: 10px;
+        }
+
+        /* 页脚 */
+        .report-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+            text-align: center;
+            font-size: 10pt;
+            color: #888;
+        }
+
+        /* 打印设置 */
+        @media print {
+            body {
+                padding: 20mm;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background: white;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            .stat-card,
+            .vuln-item,
+            .info-item,
+            .ai-summary,
+            .vuln-solution {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* 打印按钮 */
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+        }
+
+        .print-btn:hover {
+            background: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+    <!-- 打印按钮 -->
+    <button class="print-btn no-print" onclick="window.print()">
+        🖨️ 打印 / 导出 PDF
+    </button>
+
+    <!-- 报告头部 -->
+    <div class="report-header">
+        <h1 class="report-title">🛡️ 网络安全扫描报告</h1>
+        <p class="report-subtitle">端口扫描与漏洞检测分析报告</p>
+        <p class="report-meta">
+            报告编号: #{{ task.id }} | 生成时间: {{ export_time }}
+        </p>
+    </div>
+
+    <!-- 基本信息 -->
+    <div class="info-section">
+        <h2 class="section-title">📋 扫描信息</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">目标地址</div>
+                <div class="info-value">{{ task.target_ip }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">扫描协议</div>
+                <div class="info-value">{{ task.protocol.upper() }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">端口配置</div>
+                <div class="info-value">{{ task.ports_config }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">扫描时间</div>
+                <div class="info-value">{{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计概览 -->
+    {% set high_count = vulnerabilities|selectattr('risk_level', 'equalto', 'high')|list|length %}
+    {% set mid_count = vulnerabilities|selectattr('risk_level', 'equalto', 'mid')|list|length %}
+    {% set low_count = vulnerabilities|selectattr('risk_level', 'equalto', 'low')|list|length %}
+
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-value">{{ result.open_ports|length if result else 0 }}</div>
+            <div class="stat-label">开放端口</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-value">{{ high_count }}</div>
+            <div class="stat-label">高危漏洞</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-value">{{ mid_count }}</div>
+            <div class="stat-label">中危漏洞</div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-value">{{ low_count }}</div>
+            <div class="stat-label">低危漏洞</div>
+        </div>
+    </div>
+
+    <!-- AI 摘要 -->
+    {% if task.ai_summary %}
+    <div class="info-section">
+        <h2 class="section-title">🤖 AI 安全分析摘要</h2>
+        <div class="ai-summary">{{ task.ai_summary }}</div>
+    </div>
+    {% endif %}
+
+    <!-- 开放端口列表 -->
+    {% if result and result.open_ports %}
+    <div class="info-section">
+        <h2 class="section-title">🔌 开放端口详情</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>端口</th>
+                    <th>协议</th>
+                    <th>状态</th>
+                    <th>服务</th>
+                    <th>版本信息</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for port in result.open_ports %}
+                <tr>
+                    <td><strong>{{ port.port }}</strong></td>
+                    <td>{{ port.protocol }}</td>
+                    <td>{{ port.state }}</td>
+                    <td>{{ port.service }}</td>
+                    <td>{{ port.product }} {{ port.version }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- 漏洞详情 -->
+    {% if vulnerabilities %}
+    <div class="info-section page-break">
+        <h2 class="section-title">🐛 检测到的漏洞 ({{ vulnerabilities|length }} 个)</h2>
+        <div class="vuln-list">
+            {% for vuln in vulnerabilities %}
+            <div class="vuln-item {{ vuln.risk_level }}">
+                <div class="vuln-header">
+                    <span class="vuln-name">{{ vuln.name }}</span>
+                    <span class="vuln-badge {{ vuln.risk_level }}">{{ vuln.get_risk_text() }}</span>
+                </div>
+                <div class="vuln-meta">
+                    端口: {{ vuln.port }} |
+                    服务: {{ vuln.service or '未知' }} |
+                    CVE: {{ vuln.cve_id or 'N/A' }}
+                </div>
+                <div class="vuln-desc">{{ vuln.description }}</div>
+                {% if vuln.solution %}
+                <div class="vuln-solution">
+                    <strong>修复建议:</strong> {{ vuln.solution }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 报告页脚 -->
+    <div class="report-footer">
+        <p>本报告由【网络漏洞检测系统】自动生成</p>
+        <p>报告仅供参考，请结合实际情况进行安全评估和修复</p>
+        <p>© {{ task.created_at.strftime('%Y') }} 网络安全团队</p>
+    </div>
+</body>
+</html>

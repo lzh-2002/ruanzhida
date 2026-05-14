@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}回收站 - 网络漏洞检测系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        padding: 25px 30px;
+        margin-bottom: 20px;
+    }
+    .page-header .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .page-header .title-section h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .page-header .title-section p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #7f8c8d;
+    }
+    .page-header .btn-empty {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    .page-header .btn-empty:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+    }
+    .recycle-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .recycle-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .recycle-table th {
+        padding: 15px 20px;
+        text-align: left;
+        background: #f8f9fa;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .recycle-table td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+    }
+    .recycle-table tr:last-child td {
+        border-bottom: none;
+    }
+    .recycle-table tr:hover {
+        background: #fafafa;
+    }
+    .target-url {
+        color: #2c3e50;
+        font-family: monospace;
+        word-break: break-all;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #d4edda;
+        color: #155724;
+    }
+    .delete-time {
+        color: #7f8c8d;
+        font-size: 13px;
+    }
+    .task-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .btn-restore {
+        padding: 6px 16px;
+        border: 2px solid #27ae60;
+        border-radius: 6px;
+        background: white;
+        color: #27ae60;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    .btn-restore:hover {
+        background: #27ae60;
+        color: white;
+    }
+    .btn-permanent-delete {
+        padding: 6px 16px;
+        border: 2px solid #e74c3c;
+        border-radius: 6px;
+        background: white;
+        color: #e74c3c;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    .btn-permanent-delete:hover {
+        background: #e74c3c;
+        color: white;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #95a5a6;
+    }
+    .empty-state h3 {
+        margin-bottom: 10px;
+        color: #7f8c8d;
+    }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-overlay.show {
+        display: flex;
+    }
+    .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        min-width: 400px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal h3 {
+        margin: 0 0 20px 0;
+        color: #2c3e50;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .modal p {
+        margin: 0 0 10px 0;
+        color: #555;
+        font-size: 14px;
+    }
+    .modal p.small {
+        color: #7f8c8d;
+        font-size: 13px;
+    }
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    .btn-secondary {
+        padding: 10px 20px;
+        background: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    .btn-danger {
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .btn-danger:hover {
+        background: #c0392b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="title-section">
+            <h1><i>🗑</i>回收站</h1>
+            <p>管理已删除的扫描任务</p>
+        </div>
+        {% if pagination.items %}
+        <button class="btn-empty" onclick="alert('清空回收站功能即将开放')">
+            <i>🗑</i> 清空回收站
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="recycle-card">
+    {% if pagination.items %}
+    <table class="recycle-table">
+        <tr>
+            <th>目标URL</th>
+            <th>状态</th>
+            <th>删除时间</th>
+            <th>操作</th>
+        </tr>
+        {% for task in pagination.items %}
+        <tr>
+            <td><span class="target-url">{{ task.target_ip }}</span></td>
+            <td><span class="status-badge">{{ task.status }}</span></td>
+            <td><span class="delete-time">{{ task.deleted_at.strftime('%Y-%m-%d %H:%M') if task.deleted_at else '-' }}</span></td>
+            <td>
+                <div class="task-actions">
+                    <form method="POST" action="{{ url_for('restore_task', task_id=task.id) }}" style="display: inline;">
+                        <button type="submit" class="btn-restore">恢复</button>
+                    </form>
+                    <button class="btn-permanent-delete" onclick="confirmPermanentDelete({{ task.id }}, '{{ task.target_ip }}')">彻底删除</button>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% if pagination.pages > 1 %}
+    <div style="padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #eee;">
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('recycle', page=pagination.prev_num) }}">←</a>
+            {% endif %}
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <a href="#" class="active">{{ page_num }}</a>
+                    {% else %}
+                    <a href="{{ url_for('recycle', page=page_num) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                <a href="#" class="disabled" style="cursor: not-allowed; opacity: 0.5;">...</a>
+                {% endif %}
+            {% endfor %}
+            {% if pagination.has_next %}
+            <a href="{{ url_for('recycle', page=pagination.next_num) }}">→</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <h3>回收站为空</h3>
+        <p>没有已删除的任务</p>
+        <button style="margin-top: 15px; padding: 10px 20px; background: #9b59b6; color: white; border: none; border-radius: 6px; cursor: pointer;" onclick="location.href='{{ url_for('tasks') }}'">返回任务列表</button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 彻底删除确认模态框 -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <h3><i style="color: #f39c12; margin-right: 8px;">⚠</i>确认彻底删除</h3>
+        <p>确定要彻底删除目标为 <strong id="deleteTargetIp"></strong> 的任务吗？</p>
+        <p class="small">此操作不可恢复，所有相关的扫描数据和漏洞记录都将被永久删除！</p>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('show')">取消</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn-danger">
+                    <i>🗑</i>确认彻底删除
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmPermanentDelete(taskId, targetIp) {
+        document.getElementById('deleteTargetIp').textContent = targetIp;
+        document.getElementById('deleteForm').action = '/task/' + taskId + '/permanent-delete';
+        document.getElementById('deleteModal').classList.add('show');
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-secondary')) {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+    });
+</script>
+{% endblock %}

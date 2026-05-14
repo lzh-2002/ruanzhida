@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block title %}扫描任务 - 网络漏洞检测系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        padding: 25px 30px;
+        margin-bottom: 20px;
+    }
+    .page-header .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .page-header .title-section h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .page-header .title-section p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #7f8c8d;
+    }
+    .page-header .btn-new {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    .page-header .btn-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+    }
+    .page-header .search-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .page-header .search-box {
+        flex: 1;
+        max-width: 300px;
+        display: flex;
+        background: #f5f7fa;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .page-header .search-box input {
+        flex: 1;
+        padding: 12px 15px;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        outline: none;
+    }
+    .page-header .search-box button {
+        padding: 12px 20px;
+        background: #9b59b6;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+    }
+    .page-header .search-box button:hover {
+        background: #8e44ad;
+    }
+    .page-header .status-filter {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .page-header .status-filter label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #555;
+        margin-right: 8px;
+    }
+    .page-header .status-filter button {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        background: white;
+        color: #555;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .page-header .status-filter button.active {
+        background: #9b59b6;
+        border-color: #9b59b6;
+        color: white;
+    }
+    .page-header .status-filter button:hover:not(.active) {
+        border-color: #9b59b6;
+        color: #9b59b6;
+    }
+    .task-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .task-table th {
+        padding: 15px 20px;
+        text-align: left;
+        background: #f8f9fa;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .task-table td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+    }
+    .task-table tr:last-child td {
+        border-bottom: none;
+    }
+    .task-table tr:hover {
+        background: #fafafa;
+    }
+    .task-id {
+        color: #9b59b6;
+        font-weight: 600;
+    }
+    .task-url {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+    .task-url:hover {
+        color: #9b59b6;
+    }
+    .port-config {
+        color: #e74c3c;
+        font-weight: 500;
+        font-size: 13px;
+    }
+    .protocol {
+        color: #555;
+        font-weight: 500;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-running {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .task-time {
+        color: #7f8c8d;
+        font-size: 13px;
+    }
+    .task-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .btn-view {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #9b59b6;
+        border-radius: 8px;
+        background: white;
+        color: #9b59b6;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+    .btn-view:hover {
+        background: #9b59b6;
+        color: white;
+    }
+    .btn-delete {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e74c3c;
+        border-radius: 8px;
+        background: white;
+        color: #e74c3c;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+    .btn-delete:hover {
+        background: #e74c3c;
+        color: white;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #95a5a6;
+    }
+    .empty-state h3 {
+        margin-bottom: 10px;
+        color: #7f8c8d;
+    }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-overlay.show {
+        display: flex;
+    }
+    .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        min-width: 400px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal h3 {
+        margin: 0 0 20px 0;
+        color: #2c3e50;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .modal p {
+        margin: 0 0 10px 0;
+        color: #555;
+        font-size: 14px;
+    }
+    .modal p.small {
+        color: #7f8c8d;
+        font-size: 13px;
+    }
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    .btn-secondary {
+        padding: 10px 20px;
+        background: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    .btn-danger {
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .btn-danger:hover {
+        background: #c0392b;
+    }
+    .btn-danger i {
+        margin-right: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="title-section">
+            <h1><i>📋</i>扫描任务</h1>
+            <p>查看和管理您的所有扫描任务</p>
+        </div>
+        <a href="{{ url_for('scan') }}" class="btn-new">
+            <i>+</i> 新建任务
+        </a>
+    </div>
+    <div class="search-section">
+        <div class="search-box">
+            <input type="text" name="search" placeholder="搜索目标地址..." value="{{ search_query or '' }}">
+            <button onclick="document.querySelector('form').submit()">搜索</button>
+        </div>
+        <div class="status-filter">
+            <label>状态:</label>
+            <button {% if not status_filter %}class="active"{% endif %} onclick="location.href='{{ url_for('tasks', search=search_query) }}'">全部</button>
+            <button {% if status_filter == 'pending' %}class="active"{% endif %} onclick="location.href='{{ url_for('tasks', status='pending', search=search_query) }}'">等待中</button>
+            <button {% if status_filter == 'running' %}class="active"{% endif %} onclick="location.href='{{ url_for('tasks', status='running', search=search_query) }}'">扫描中</button>
+            <button {% if status_filter == 'completed' %}class="active"{% endif %} onclick="location.href='{{ url_for('tasks', status='completed', search=search_query) }}'">已完成</button>
+            <button {% if status_filter == 'failed' %}class="active"{% endif %} onclick="location.href='{{ url_for('tasks', status='failed', search=search_query) }}'">失败</button>
+        </div>
+    </div>
+    <form method="GET" style="display: none;">
+        <input type="text" name="search" value="{{ search_query or '' }}">
+    </form>
+</div>
+
+<div class="task-card">
+    {% if pagination.items %}
+    <table class="task-table">
+        <tr>
+            <th>ID</th>
+            <th>目标地址</th>
+            <th>端口配置</th>
+            <th>协议</th>
+            <th>状态</th>
+            <th>创建时间</th>
+            <th>操作</th>
+        </tr>
+        {% for task in pagination.items %}
+        <tr>
+            <td><span class="task-id">{{ task.id }}</span></td>
+            <td><span class="task-url">📍 {{ task.target_ip }}</span></td>
+            <td><span class="port-config">{{ task.ports_config[:20] }}{{ '...' if task.ports_config|length > 20 else '' }}</span></td>
+            <td><span class="protocol">{{ task.protocol.upper() }}</span></td>
+            <td><span class="status-badge status-{{ task.status }}">
+                {% if task.status == 'running' %}<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0c5460; animation: pulse 1s infinite;"></span> {% endif %}
+                {{ task.get_status_text() }}
+            </span></td>
+            <td><span class="task-time">{{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span></td>
+            <td>
+                <div class="task-actions">
+                    <button class="btn-view" title="查看详情" onclick="location.href='{{ url_for('task_detail', task_id=task.id) }}'">👁</button>
+                    <button class="btn-delete" title="删除" onclick="confirmDelete({{ task.id }})">🗑</button>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% if pagination.pages > 1 %}
+    <div style="padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #eee;">
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('tasks', page=pagination.prev_num, status=status_filter, search=search_query) }}">←</a>
+            {% endif %}
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <a href="#" class="active">{{ page_num }}</a>
+                    {% else %}
+                    <a href="{{ url_for('tasks', page=page_num, status=status_filter, search=search_query) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                <a href="#" class="disabled" style="cursor: not-allowed; opacity: 0.5;">...</a>
+                {% endif %}
+            {% endfor %}
+            {% if pagination.has_next %}
+            <a href="{{ url_for('tasks', page=pagination.next_num, status=status_filter, search=search_query) }}">→</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <h3>暂无扫描任务</h3>
+        <p>点击右上角按钮开始新扫描</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <h3><i style="color: #f39c12; margin-right: 8px;">⚠</i>确认删除</h3>
+        <p>确定要将此任务移到回收站吗？</p>
+        <p class="small">您可以在回收站中恢复或彻底删除该任务。</p>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('show')">取消</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn-danger">
+                    <i>🗑</i>确认删除
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(taskId) {
+        document.getElementById('deleteForm').action = '/task/' + taskId + '/delete';
+        document.getElementById('deleteModal').classList.add('show');
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-secondary')) {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+    });
+
+    // 搜索功能
+    document.querySelector('.search-box input').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('form').submit();
+        }
+    });
+
+    // 运行中状态动画
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 自动刷新运行中的任务状态
+    function refreshRunningTasks() {
+        document.querySelectorAll('.status-running').forEach(function(badge) {
+            const taskId = badge.parentElement.parentElement.querySelector('.task-id').textContent;
+            fetch('/task/' + taskId + '/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'running') {
+                        location.reload();
+                    }
+                });
+        });
+    }
+
+    if (document.querySelector('.status-running')) {
+        setInterval(refreshRunningTasks, 5000);
+    }
+</script>
+{% endblock %}

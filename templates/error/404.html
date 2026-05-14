@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}404 - 页面未找到{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <div style="font-size: 6rem; color: var(--md-primary);">
+            <i class="bi bi-question-circle animate-float"></i>
+        </div>
+        <h1 class="display-1 fw-bold" style="color: var(--md-primary);">404</h1>
+        <h4 class="mb-3">页面未找到</h4>
+        <p class="text-muted mb-4">抱歉，您访问的页面不存在或已被移除。</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="javascript:history.back()" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>返回上页
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="bi bi-house me-2"></i>返回首页
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div style="font-size: 6rem; color: var(--md-primary);">
+        <i class="bi bi-question-circle animate-float"></i>
+    </div>
+    <h1 class="display-1 fw-bold" style="color: var(--md-primary);">404</h1>
+    <h4 class="mb-3">页面未找到</h4>
+    <p class="text-muted mb-4">抱歉，您访问的页面不存在或已被移除。</p>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="javascript:history.back()" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-2"></i>返回上页
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-house me-2"></i>返回首页
+        </a>
+    </div>
+</div>
+{% endblock %}

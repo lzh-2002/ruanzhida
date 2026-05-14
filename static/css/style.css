@@ -1,0 +1,210 @@
+/**
+ * 网络漏洞检测系统 - 自定义样式
+ * 补充 Bootstrap 和基础模板之外的样式
+ */
+
+/* 打印样式 */
+@media print {
+    .sidebar,
+    .navbar,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}
+
+/* 自定义滚动条（Webkit 浏览器） */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--md-outline-variant);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--md-outline);
+}
+
+/* 代码块样式 */
+code {
+    background: var(--md-surface-variant);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--md-primary);
+}
+
+pre {
+    background: var(--md-surface-variant);
+    padding: 1rem;
+    border-radius: var(--md-radius-md);
+    overflow-x: auto;
+}
+
+pre code {
+    background: transparent;
+    padding: 0;
+}
+
+/* 链接样式 */
+a {
+    color: var(--md-primary);
+    text-decoration: none;
+    transition: var(--md-transition);
+}
+
+a:hover {
+    color: var(--md-primary-dark);
+}
+
+/* 选中文本样式 */
+::selection {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+
+/* 表格排序指示器 */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background: var(--md-primary-container);
+}
+
+.sortable::after {
+    content: '\F282';
+    font-family: 'bootstrap-icons';
+    margin-left: 0.5rem;
+    opacity: 0.3;
+}
+
+.sortable.asc::after {
+    content: '\F235';
+    opacity: 1;
+}
+
+.sortable.desc::after {
+    content: '\F229';
+    opacity: 1;
+}
+
+/* 加载骨架屏 */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--md-surface-variant) 25%,
+        var(--md-surface-container) 50%,
+        var(--md-surface-variant) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--md-radius-sm);
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+}
+
+.skeleton-text:last-child {
+    width: 60%;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.skeleton-card {
+    height: 200px;
+}
+
+/* 图表容器 */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* 脉冲动画点 */
+.pulse-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--md-success);
+    border-radius: 50%;
+    position: relative;
+}
+
+.pulse-dot::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 50%;
+    animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.33);
+        opacity: 1;
+    }
+    80%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* 空状态样式 */
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: var(--md-outline-variant);
+    margin-bottom: 1rem;
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md-on-surface);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-description {
+    color: var(--md-on-surface-variant);
+    margin-bottom: 1.5rem;
+}

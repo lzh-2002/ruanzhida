@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}系统配置 - 网络漏洞检测系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="bi bi-gear me-2" style="color: var(--md-primary);"></i>系统配置
+    </h1>
+    <p class="page-subtitle">管理系统全局配置参数</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-sliders me-2"></i>配置项
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin_config') }}">
+                    <!-- 最大并发数 -->
+                    <div class="mb-4">
+                        <label class="form-label" for="max_threads">
+                            <i class="bi bi-cpu me-1"></i>最大并发扫描数
+                        </label>
+                        <input type="number" class="form-control" id="max_threads" name="max_threads"
+                               value="{{ configs.max_threads }}" min="1" max="20">
+                        <div class="form-text">同时执行的最大扫描任务数量（建议 1-10）</div>
+                    </div>
+
+                    <!-- API 调用上限 -->
+                    <div class="mb-4">
+                        <label class="form-label" for="api_limit">
+                            <i class="bi bi-cloud me-1"></i>AI API 每日调用上限
+                        </label>
+                        <input type="number" class="form-control" id="api_limit" name="api_limit"
+                               value="{{ configs.api_limit }}" min="1" max="10000">
+                        <div class="form-text">每日允许调用 AI 分析接口的最大次数</div>
+                    </div>
+
+                    <!-- 扫描超时时间 -->
+                    <div class="mb-4">
+                        <label class="form-label" for="scan_timeout">
+                            <i class="bi bi-clock me-1"></i>扫描超时时间（秒）
+                        </label>
+                        <input type="number" class="form-control" id="scan_timeout" name="scan_timeout"
+                               value="{{ configs.scan_timeout }}" min="60" max="3600">
+                        <div class="form-text">单个扫描任务的最大执行时间（60-3600秒）</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="resetDefaults()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>恢复默认
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>保存配置
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 配置说明 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>配置说明
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">并发扫描数</h6>
+                    <p class="text-muted small mb-0">控制系统同时运行的扫描任务数量。较高的值可以加快批量扫描速度，但会增加系统资源消耗。</p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-primary">API 调用上限</h6>
+                    <p class="text-muted small mb-0">限制每日 AI 分析接口的调用次数，防止接口过度使用。</p>
+                </div>
+                <div>
+                    <h6 class="text-primary">扫描超时</h6>
+                    <p class="text-muted small mb-0">设置单个扫描任务的最大执行时间，超时后任务将被标记为失败。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 默认值参考 -->
+        <div class="card" style="background: var(--md-surface-variant);">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="bi bi-bookmark me-2"></i>默认值参考</h6>
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted">最大并发数</td>
+                        <td class="text-end"><code>5</code></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">API 上限</td>
+                        <td class="text-end"><code>100</code></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">超时时间</td>
+                        <td class="text-end"><code>300</code> 秒</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function resetDefaults() {
+        if (confirm('确定要恢复默认配置吗？')) {
+            document.getElementById('max_threads').value = 5;
+            document.getElementById('api_limit').value = 100;
+            document.getElementById('scan_timeout').value = 300;
+        }
+    }
+</script>
+{% endblock %}

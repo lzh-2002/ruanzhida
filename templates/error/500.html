@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}500 - 服务器错误{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <div style="font-size: 6rem; color: var(--md-error);">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h1 class="display-1 fw-bold" style="color: var(--md-error);">500</h1>
+        <h4 class="mb-3">服务器错误</h4>
+        <p class="text-muted mb-4">抱歉，服务器遇到了一些问题。请稍后重试或联系管理员。</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="javascript:location.reload()" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-clockwise me-2"></i>刷新页面
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="bi bi-house me-2"></i>返回首页
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div style="font-size: 6rem; color: var(--md-error);">
+        <i class="bi bi-exclamation-triangle"></i>
+    </div>
+    <h1 class="display-1 fw-bold" style="color: var(--md-error);">500</h1>
+    <h4 class="mb-3">服务器错误</h4>
+    <p class="text-muted mb-4">抱歉，服务器遇到了一些问题。请稍后重试或联系管理员。</p>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="javascript:location.reload()" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-clockwise me-2"></i>刷新页面
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-house me-2"></i>返回首页
+        </a>
+    </div>
+</div>
+{% endblock %}

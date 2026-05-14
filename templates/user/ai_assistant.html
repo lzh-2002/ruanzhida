@@ -1,0 +1,541 @@
+{% extends "base.html" %}
+
+{% block title %}AI 助手 - 网络漏洞检测系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        padding: 25px 30px;
+        margin-bottom: 20px;
+    }
+    .page-header .title-section h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .page-header .title-section p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #7f8c8d;
+    }
+    .main-content {
+        display: flex;
+        gap: 20px;
+        width: 100%;
+        align-items: stretch;
+        min-height: 600px;
+    }
+    .chat-section {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 600px;
+    }
+    .sidebar-section {
+        flex: 1;
+        min-width: 320px;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-height: 600px;
+    }
+    .chat-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .chat-header {
+        padding: 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .chat-avatar-lg {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+    .chat-info h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .chat-info p {
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: #27ae60;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .chat-message {
+        display: flex;
+        gap: 12px;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .chat-message.user {
+        flex-direction: row-reverse;
+    }
+    .message-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .chat-message .message-avatar {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        font-size: 14px;
+    }
+    .chat-message.user .message-avatar {
+        background: #3498db;
+    }
+    .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .chat-message .message-bubble {
+        background: #f5f7fa;
+        border-radius: 16px 16px 16px 4px;
+        color: #333;
+    }
+    .chat-message.user .message-bubble {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        border-radius: 16px 16px 4px 16px;
+    }
+    .message-bubble ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+    .message-bubble li {
+        margin: 4px 0;
+    }
+    .chat-input-area {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        background: #fafafa;
+    }
+    .chat-form {
+        display: flex;
+        gap: 10px;
+    }
+    .chat-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #ddd;
+        border-radius: 30px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+    .chat-input:focus {
+        border-color: #9b59b6;
+    }
+    .send-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+    .send-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+    }
+    .send-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .sidebar-card:last-child {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .sidebar-card-header {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .sidebar-card-body {
+        padding: 15px 20px;
+    }
+    .sidebar-card:last-child .sidebar-card-body {
+        flex: 1;
+    }
+    .quick-question {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        text-align: left;
+        font-size: 13px;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .quick-question:last-child {
+        margin-bottom: 0;
+    }
+    .quick-question:hover {
+        border-color: #9b59b6;
+        color: #9b59b6;
+        transform: translateX(5px);
+    }
+    .tip-section {
+        margin-bottom: 15px;
+    }
+    .tip-section:last-child {
+        margin-bottom: 0;
+    }
+    .tip-section h4 {
+        margin: 0 0 8px 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: #9b59b6;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .tip-section p {
+        margin: 0;
+        font-size: 12px;
+        color: #7f8c8d;
+        line-height: 1.5;
+    }
+    .topic-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .topic-tag {
+        padding: 6px 14px;
+        background: #f5f7fa;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .topic-tag:hover {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        border-color: #9b59b6;
+        color: white;
+    }
+    .loading-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #7f8c8d;
+    }
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ddd;
+        border-top-color: #9b59b6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    @media (max-width: 992px) {
+        .main-content {
+            flex-direction: column;
+            min-height: auto;
+        }
+        .chat-section {
+            min-height: auto;
+        }
+        .sidebar-section {
+            min-height: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="title-section">
+        <h1><i>🤖</i>AI 安全助手</h1>
+        <p>智能安全问答，获取专业的漏洞分析和安全建议</p>
+    </div>
+</div>
+
+<div class="main-content">
+    <!-- 聊天区域 -->
+    <div class="chat-section">
+        <div class="chat-card">
+            <div class="chat-header">
+                <div class="chat-avatar-lg">🤖</div>
+                <div class="chat-info">
+                    <h3>安全顾问 AI</h3>
+                    <p><span style="width: 8px; height: 8px; border-radius: 50%; background: #27ae60; display: inline-block;"></span> 在线</p>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <!-- 欢迎消息 -->
+                <div class="chat-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-bubble">
+                        <p style="margin: 0 0 8px;">您好！我是网络安全 AI 助手，专注于：</p>
+                        <ul style="margin: 0 0 8px;">
+                            <li>漏洞分析与修复建议</li>
+                            <li>端口服务安全评估</li>
+                            <li>网络安全最佳实践</li>
+                            <li>渗透测试相关问题</li>
+                        </ul>
+                        <p style="margin: 0;">请问有什么可以帮助您的？</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <form id="chatForm" class="chat-form">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="输入您的问题..." autocomplete="off">
+                    <button type="submit" class="send-btn" id="sendBtn">
+                        <i>➤</i>发送
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快捷问题 -->
+    <div class="sidebar-section">
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <i>⚡</i>快捷问题
+            </div>
+            <div class="sidebar-card-body">
+                <button class="quick-question">
+                    什么是端口扫描？
+                </button>
+                <button class="quick-question">
+                    如何修复 SSH 弱密码漏洞？
+                </button>
+                <button class="quick-question">
+                    开放 3389 端口有什么风险？
+                </button>
+                <button class="quick-question">
+                    如何防范 SQL 注入攻击？
+                </button>
+                <button class="quick-question">
+                    解释一下 CVE 漏洞编号
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <i>💡</i>使用提示
+            </div>
+            <div class="sidebar-card-body">
+                <div class="tip-section">
+                    <h4><i>💬</i>如何提问</h4>
+                    <p>尽量描述具体的问题场景，包括端口号、服务名称、错误信息等，可以获得更精准的回答。</p>
+                </div>
+                <div class="tip-section">
+                    <h4><i>🛡</i>安全建议</h4>
+                    <p>AI 提供的建议仅供参考，实施前请在测试环境验证，重要系统请咨询专业安全人员。</p>
+                </div>
+                <div class="tip-section">
+                    <h4><i>📚</i>持续学习</h4>
+                    <p>网络安全领域日新月异，建议定期关注最新的安全公告和漏洞信息。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <i>🏷</i>热门话题
+            </div>
+            <div class="sidebar-card-body">
+                <div class="topic-tags">
+                    <span class="topic-tag" onclick="askAbout('防火墙配置')">防火墙配置</span>
+                    <span class="topic-tag" onclick="askAbout('加密协议')">加密协议</span>
+                    <span class="topic-tag" onclick="askAbout('Web 安全')">Web 安全</span>
+                    <span class="topic-tag" onclick="askAbout('权限管理')">权限管理</span>
+                    <span class="topic-tag" onclick="askAbout('日志分析')">日志分析</span>
+                    <span class="topic-tag" onclick="askAbout('入侵检测')">入侵检测</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${isUser ? 'user' : ''}`;
+
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        avatarDiv.textContent = isUser ? '👤' : '🤖';
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'message-bubble';
+        bubbleDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(bubbleDiv);
+        chatMessages.appendChild(messageDiv);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addLoadingMessage() {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message';
+        messageDiv.id = 'loadingMessage';
+
+        messageDiv.innerHTML = `
+            <div class="message-avatar">🤖</div>
+            <div class="message-bubble">
+                <div class="loading-indicator">
+                    <div class="spinner"></div>
+                    <span>AI 正在思考中...</span>
+                </div>
+            </div>
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function removeLoadingMessage() {
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.remove();
+        }
+    }
+
+    async function sendMessage(question) {
+        if (!question.trim()) return;
+
+        addMessage(question, true);
+        chatInput.value = '';
+        sendBtn.disabled = true;
+
+        addLoadingMessage();
+
+        try {
+            const response = await fetch('/ai/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: question })
+            });
+
+            const data = await response.json();
+            removeLoadingMessage();
+
+            if (data.success) {
+                addMessage(data.answer);
+            } else {
+                addMessage('抱歉，处理您的问题时出现错误：' + (data.error || '未知错误'));
+            }
+        } catch (error) {
+            removeLoadingMessage();
+            addMessage('网络请求失败，请稍后重试。');
+        }
+
+        sendBtn.disabled = false;
+        chatInput.focus();
+    }
+
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessage(chatInput.value);
+    });
+
+    document.querySelectorAll('.quick-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const question = this.textContent.trim().replace(/^[\s\S]*?(?=\S)/, '');
+            sendMessage(question);
+        });
+    });
+
+    function askAbout(topic) {
+        sendMessage(`请介绍一下${topic}的相关知识和最佳实践`);
+    }
+
+    chatInput.focus();
+</script>
+{% endblock %}
